@@ -1,0 +1,77 @@
+# Exchange Mailbox Search and Delete Commands
+
+This document explains how to search and delete specific mailbox items in **Exchange 2010** and the equivalent process in **Microsoft 365 (Exchange Online)**.
+
+---
+
+## Exchange 2010 Commands
+
+### Delete Meetings
+```powershell
+Search-Mailbox –Identity username –SearchQuery kind:meetings –DeleteContent
+```
+
+### Estimate Before Deletion
+```powershell
+Search-Mailbox –Identity username –SearchQuery kind:meetings –EstimateResultOnly
+```
+
+### Delete Other Item Types
+```powershell
+Search-Mailbox –Identity username –SearchQuery kind:contacts –DeleteContent
+Search-Mailbox –Identity username –SearchQuery kind:notes –DeleteContent
+Search-Mailbox –Identity username –SearchQuery kind:tasks –DeleteContent
+Search-Mailbox –Identity username –SearchQuery kind:im –DeleteContent
+Search-Mailbox –Identity username –SearchQuery kind:email –DeleteContent
+```
+
+---
+
+## Microsoft 365 Equivalent (Exchange Online)
+
+The `Search-Mailbox` cmdlet is deprecated in Microsoft 365. Use **Compliance Search** and **Purge actions** via **Security & Compliance Center PowerShell**.
+
+### Steps:
+
+1. **Create a Compliance Search**
+```powershell
+New-ComplianceSearch -Name "DeleteMeetings" -ExchangeLocation "username" -ContentMatchQuery 'kind:meetings'
+```
+
+2. **Start the Search**
+```powershell
+Start-ComplianceSearch -Identity "DeleteMeetings"
+```
+
+3. **Preview Results (Estimate)**
+```powershell
+Get-ComplianceSearch -Identity "DeleteMeetings"
+```
+
+4. **Purge Items**
+```powershell
+New-ComplianceSearchAction -SearchName "DeleteMeetings" -Purge -PurgeType HardDelete
+```
+
+- `HardDelete` = Permanently deletes items.
+- `SoftDelete` = Moves items to the Recoverable Items folder.
+
+### Other Queries
+Replace `kind:meetings` with:
+- `kind:contacts`
+- `kind:notes`
+- `kind:tasks`
+- `kind:im`
+- `kind:email`
+
+---
+
+## Permissions
+- Requires **Mailbox Import Export** role in Exchange 2010.
+- Requires **eDiscovery Manager or Administrator role** in Microsoft 365.
+
+---
+
+## References
+- [Microsoft Docs: Search-Mailbox](https://learn.microsoft.com/en-us/powershell/module/exchange/search-mailbox)
+- [Microsoft Docs: Compliance Search](https://learn.microsoft.com/en-us/microsoft-365/compliance/content-search)
