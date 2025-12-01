@@ -1,0 +1,13 @@
+# Purpose
+# These commands configure and audit Receive Connectors in Exchange to allow anonymous relay for specific connectors and then generate a report of those permissions.
+
+# Enable AnonymousUsers on a Receive Connector
+Set-ReceiveConnector "<ConnectorName>" -PermissionGroups AnonymousUsers
+
+# Grant relay permission to Anonymous Logon
+Get-ReceiveConnector "<ConnectorName>" | Add-ADPermission -User 'NT AUTHORITY\Anonymous Logon' -ExtendedRights MS-Exch-SMTP-Accept-Any-Recipient
+
+# Audit connectors with anonymous relay enabled
+Get-ReceiveConnector | Get-ADPermission |
+Where-Object { $_.User -Like '*anon*' -And $_.ExtendedRights -Like 'ms-Exch-SMTP-Accept-Any-Recipient' } |
+Format-Table Identity, User, ExtendedRights
