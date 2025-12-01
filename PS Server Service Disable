@@ -1,0 +1,3 @@
+# This like a lot of my scripts are legacy, related. This is for Server 2016 Downloaded Maps Manager Service Stopped. 
+
+Get-Service -Name MapsBroker | Set-Service -StartupType Disabled -Confirm:$false
