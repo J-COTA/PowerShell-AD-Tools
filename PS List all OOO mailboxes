@@ -1,0 +1,3 @@
+# This PowerShell command is used to find all mailboxes in Exchange that have Out of Office (automatic replies) enabled and export their details to a CSV file.
+
+Get-Mailbox -ResultSize Unlimited | Get-MailboxAutoReplyConfiguration | Where-Object { $_.AutoReplyState -ne "Disabled" } | Select Identity, StartTime, EndTime, AutoReplyState | Export-CSV C:\Users\username\Desktop\OutofOffice.csv -NoTypeInformation -Encoding UTF8
