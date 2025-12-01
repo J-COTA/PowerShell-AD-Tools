@@ -1,0 +1,51 @@
+# Purpose
+# This procedure restores a deleted Active Directory object (such as a user account) from the Deleted Objects container using PowerShell and the Restore-ADObject cmdlet.
+
+# Step-by-Step Explanation
+# 1. Identify Deleted Object Details
+# Run:
+PowerShellldifde -x -d "cn=deleted objects,dc=contoso,dc=com" -f delobjs.ldf
+
+# Show more lines
+
+# What it does:
+
+# Uses ldifde to export all deleted objects from the AD Deleted Objects container into a file (delobjs.ldf).
+# The -x switch includes extended attributes like lastKnownParent.
+
+
+# Next:
+
+# Open delobjs.ldf in Notepad.
+# Locate the deleted object (example: bshwjt).
+# Copy its Distinguished Name (DN) and lastKnownParent attributes.
+
+# 2. Restore the Deleted Object
+# Run:
+PowerShellRestore-ADObject -Identity "CN=bshwjt\0ADEL:dd1812f5-653b-43b3-89f2-aaec8373d29c,CN=Deleted Objects,DC=Contoso,DC=com" `-NewName "bshjwt" `-TargetPath "OU=TestOU,DC=Contoso,DC=com"Show more lines
+
+# Parameters:
+
+# -Identity → The DN of the deleted object (from the LDIF file).
+# -NewName → Optional new name for the restored object.
+# -TargetPath → The OU where the object will be restored.
+
+# 3. Post-Restoration Steps
+
+# Reset the user’s password.
+# Enable the account (it will be disabled after restoration).
+# Verify group memberships and attributes.
+
+# Key Notes
+
+# Recycle Bin Feature:
+# Restore-ADObject works only if the AD Recycle Bin feature is enabled in your forest.
+# Permissions:
+# Requires Domain Admin or delegated rights to restore objects.
+# Impact:
+# Restored objects may not retain all attributes (especially if tombstoned for a long time).
+
+# Why Use This Process?
+
+# Quick recovery of accidentally deleted users without recreating them from scratch.
+# Preserves SID and some attributes, reducing impact on permissions.
