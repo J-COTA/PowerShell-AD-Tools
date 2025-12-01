@@ -1,0 +1,12 @@
+# This PowerShell snippet is used to export a list of computers from a specific Organizational Unit (OU) in Active Directory to a CSV file.
+
+param (
+    [Parameter(Mandatory=$true)]
+    [string]$OUpath,        # Example: 'OU=Corporate,DC=example,DC=com'
+    
+    [Parameter(Mandatory=$true)]
+    [string]$ExportPath     # Example: 'C:\Reports\computers.csv'
+)
+
+Get-ADComputer -Filter * -SearchBase $OUpath |
+Select-Object DistinguishedName, DNSHostName, Name |
