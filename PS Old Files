@@ -1,0 +1,18 @@
+# This PowerShell script is designed to find the oldest file in a given directory (including subdirectories) and display its name and last modified date.
+
+Get-OldestFile -Path "\\irv01\Share" -ExcludeExtensions ".tmp", ".log" -OutputCsv "C:\Reports\OldestFile.csv"
+
+----
+
+# Legacy
+
+$FileDate = (Get-Date -Format g)
+$path = "\\Seerver\Share"
+Get-ChildItem -Path $path -Recurse | ForEach-Object {
+if ($_.LastWriteTime -lt $FileDate -and -not $_.PSIsContainer) {
+$FileDate = $_.LastWriteTime
+$OldFile = $_.FullName
+}
+}
+Write-Host 'The oldest file on the system is: ' $OldFile
+$FileDate
