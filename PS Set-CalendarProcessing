@@ -1,0 +1,5 @@
+# What It Does Overall
+# This command changes the behavior of a mailbox so that non-calendar items sent to it are retained instead of being deleted.
+# Commonly used for resource mailboxes (like meeting rooms) when you want to keep all messages for auditing or troubleshooting.
+
+Set-CalendarProcessing "user_email@domain.com" -DeleteNonCalendarItems $false
