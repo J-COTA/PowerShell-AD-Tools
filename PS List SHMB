@@ -1,0 +1,10 @@
+# What It Does Overall
+# Generates a report of all shared mailboxes and their permissions, listing:
+
+# Mailbox name
+# Users with access
+# Access rights
+
+# And saves it as a CSV file for auditing or documentation.
+
+Get-Mailbox -RecipientTypeDetails SharedMailbox -ResultSize:Unlimited | Get-MailboxPermission |Select-Object Identity,User,AccessRights | Where-Object {($_.user -like '*@*')}|Export-Csv C:\Users\username\Desktop\sharedfolders.csv  -NoTypeInformation
