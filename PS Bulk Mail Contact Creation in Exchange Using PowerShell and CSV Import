@@ -1,0 +1,21 @@
+# What It Does Overall
+# This script bulk-creates mail contacts in Exchange using data from a CSV file.
+# Each contact:
+
+# Has a name and external email address.
+# Is stored in the specified OU.
+
+# Use Case
+
+# Common in hybrid or on-prem Exchange environments.
+# Useful for adding external recipients (vendors, partners) to distribution groups without creating full mailboxes.
+
+
+Import-CSV "contacts.csv" | Foreach {
+    New-MailContact -Name $_.Name -ExternalEmailAddress $_.Email -OrganizationalUnit "Users"
+}
+
+# Example CSV:
+# Name,Email
+# John Doe,john.doe@example.com
+# Jane Smith,jane.smith@example.com
