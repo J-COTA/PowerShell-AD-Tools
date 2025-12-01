@@ -1,0 +1,22 @@
+# Purpose
+# This script:
+
+# Reads a list of usernames from a CSV.
+# Queries Active Directory for account status and password expiry details.
+# Outputs the results into a new CSV file.
+
+.\Get-ADUserExpiry.ps1 -InputCsvPath "C:\Path\To\Input.csv" -OutputCsvPath "C:\Path\To\Output.csv"
+
+# Generic PowerShell Script to Get AD User Info and Password Expiry
+param (
+    [Parameter(Mandatory=$true)]
+    [string]$InputCsvPath,   # Path to input CSV file
+    [Parameter(Mandatory=$true)]
+    [string]$OutputCsvPath   # Path to output CSV file
+)
+
+Import-CSV -Path $InputCsvPath | ForEach-Object {
+    Get-ADUser -Identity $_.samaccountname -Properties DisplayName, msDS-UserPasswordExpiryTimeComputed, Enabled, PasswordNeverExpires |
+    Select-Object -Property DisplayName, Enabled, PasswordNeverExpires, @{
+        Name="ExpiryDate"; Expression={[datetime]::FromFileTime($_."msDS-UserPasswordExpiryTimeComputed")}
+    }
