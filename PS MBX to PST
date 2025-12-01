@@ -1,0 +1,8 @@
+# What it does in practice:
+
+# It exports all mailbox data (emails, calendar items, contacts, etc.) from the specified mailbox into a PST file.
+# The PST file is stored on the network share you specify.
+# This is commonly used for backup, archiving, or migration purposes.
+
+Get-MailboxExportRequest
+New-MailboxExportRequest -Mailbox "username" -FilePath "\\server\share\dir\username.pst"
