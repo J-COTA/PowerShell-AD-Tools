@@ -1,0 +1,17 @@
+##What Does It Do Overall?
+##It generates a report of all members in the AD group, including:
+
+##Their username (samAccountName)
+##Their display name
+##Their job title
+
+##And saves this report as a CSV file for easy viewing or sharing.
+
+##Performance Note:
+##For large groups, this script can be slow because it calls Get-ADUser for each member individually. A more efficient way is to use Get-ADUser with a filter or Get-ADGroupMember combined with Get-ADUser in a single pipeline.
+
+Get-ADGroupMember -Identity "AD_Group_Name" |
+Select samAccountName,
+    @{Name="DisplayName";Expression={(Get-ADUser $_.distinguishedName -Properties Displayname).Displayname}},
+    @{Name="Title";Expression={(Get-ADUser $_.distinguishedName -Properties Title).title}} |
+Export-CSV "c:\DIR\AD_Group_Name.csv"
