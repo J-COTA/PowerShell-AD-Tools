@@ -1,0 +1,6 @@
+## What Does It Do Overall?
+## It creates a new global security group named “RODC Admins” in your domain, places it in the Users container, and sets its display name and description.
+## This group is intended for RODC (Read-Only Domain Controller) administrators, who typically have delegated permissions to manage RODCs without full domain admin rights.
+
+New-ADGroup -Name "RODC Admins" -SamAccountName RODCAdmins -GroupCategory Security -GroupScope Global -DisplayName "RODC Administrators" -Path "CN=Users,DC=Domain,DC=Com" -Description "Members of this group are RODC Administrators"
+## or
