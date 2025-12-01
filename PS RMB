@@ -1,0 +1,15 @@
+# What It Does Overall
+
+# Creates a shared mailbox in Exchange Online and an associated AD object in the specified OU.
+# Commonly used in hybrid environments where:
+
+# AD accounts are managed on-prem.
+# Mailboxes are hosted in Microsoft 365.
+
+
+New-RemoteMailbox -Name "Name of mailbox and AD Object" -FirstName "<Optional>" -LastName "<Optional>" -UserPrincipalName NameOfMailboxAndAdObect@domain.com -OnPremisesOrganizationalUnit "<The OU where the Object needs to be created> -PrimarySmtpAddress DesiredEmailAddressforNewlyCreatedMailbox@domain.com -Shared
+
+# Use Case
+
+# Provisioning shared mailboxes for teams or departments.
+# Ensures mailbox is cloud-based but tied to on-prem AD for identity management.
