@@ -1,0 +1,21 @@
+# What It Does Overall
+
+# Prompts for an expiration date (or uses provided input).
+# Applies that expiration date to all specified AD user accounts.
+# Useful for temporary accounts, contractors, or compliance requirements.
+
+
+Param (
+    [Parameter(Mandatory=$True,ValueFromPipeline=$true)]
+    [Array]$Usernames,
+
+    [Parameter(Mandatory=$True)]
+    [datetime]$Expires = $(Read-Host -Prompt "Please enter the time to expire in format [MM/DD/YYYY H:MM:SS PM]")
+)
+
+Try { Import-Module ActiveDirectory -ErrorAction Stop }
+Catch { Write-Host "Unable to load Active Directory module, is RSAT installed?"; Break }
+
+ForEach ($Username in $Usernames) {
+    Set-ADUser $Username -AccountExpirationDate $Expires
+}
