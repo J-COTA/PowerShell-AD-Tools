@@ -1,0 +1,3 @@
+# Simple command to give users full access to a mailbox. 
+
+Add-MailboxPermission -Identity "mailbox@domain.com" -User User.name@domain.com -AccessRights Fullaccess -InheritanceType all
