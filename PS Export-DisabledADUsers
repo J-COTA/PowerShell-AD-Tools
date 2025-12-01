@@ -1,0 +1,7 @@
+# Overall
+# It creates a CSV report of disabled users in the given OU, containing their SAMAccountName and EmployeeNumber.
+
+
+Get-ADUser -Filter * -SearchBase "OU=OUName,OU=OUName,DC=name,DC=name" -Properties EmployeeNumber | Where-Object {$_.Enabled -eq $false} |
+Select-Object SAMAccountName,EmployeeNumber |
+Export-Csv -Path C:\disabled.csv -NoTypeInformation
