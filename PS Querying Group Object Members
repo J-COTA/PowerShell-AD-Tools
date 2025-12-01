@@ -1,0 +1,33 @@
+# What Does It Do Overall?
+# It attempts to generate a report of the distribution group NDTICorporate@ndti.net, including:
+
+# The group’s samAccountName and Name
+# Each member’s DisplayName and Title (though this part will fail unless you use Get-DistributionGroupMember)
+# Requires: Exchange (on-prem or Exchange Online) module/session AND ActiveDirectory module
+# Example: Connect-ExchangeOnline; Import-Module ActiveDirectory
+
+$groupId = "Group_Name@domain.com"
+$out    = "C:\Dir\usrname\Desktop\Group_Name.csv"
+
+Get-DistributionGroupMember -Identity $groupId | ForEach-Object {
+    $member = $_
+    $adUser = $null
+
+    # Try to resolve AD attributes for user-type recipients
+    if ($member.DistinguishedName) {
+        try {
+            $adUser = Get-ADUser -Identity $member.DistinguishedName -Properties DisplayName, Title, SamAccountName
+        } catch {
+            # Non-AD or lookup failed; we'll fall back to Exchange properties
+        }
+    }
+
+    [pscustomobject]@{
+        SamAccountName = if ($adUser) { $adUser.SamAccountName } else { $null }
+        Name           = $member.Name
+        DisplayName    = if ($adUser -and $adUser.DisplayName) { $adUser.DisplayName } else { $member.DisplayName }
+        Title          = if ($adUser) { $adUser.Title } else { $null }
+        RecipientType  = $member.RecipientType
+        EmailAddress   = $member.PrimarySmtpAddress
+    }
+} | Export-Csv -Path $out -NoTypeInformation -Encoding UTF8
