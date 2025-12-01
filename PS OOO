@@ -1,0 +1,7 @@
+# Set OOO Auto reply for user who is expired or terminated.
+
+Set-MailboxAutoReplyConfiguration -Identity username -AutoReplyState Enabled/Disabled/Scheduled [-EndTime DateTime] [-ExternalAudience None/Known/All] [-ExternalMessage message] -InternalMessage  message [-StartTime DateTime]
+
+# Example
+
+Set-MailboxAutoReplyConfiguration -Identity tony -AutoReplyState Scheduled -StartTime "7/10/2018 08:00:00" -EndTime "mm/dd/yyyy 17:00:00" -InternalMessage "Internal auto-reply message" ExternalMessage "External auto-reply message"
