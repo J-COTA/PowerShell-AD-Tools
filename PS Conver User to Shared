@@ -1,0 +1,10 @@
+# Legacy Exchange 2010 
+
+# Type in the following cmdlet:
+Set-Mailbox "<Maibox Name>" -Type shared
+
+# And give the appropriate permissions to the user as well
+Add-MailboxPermission <Mailbox Name> -User "<domain\username>" -AccessRights FullAccess
+
+Add-ADPermission <Mailbox Name> -User "<domain\username>" -ExtendedRights Send-As
+
