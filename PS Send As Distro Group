@@ -1,0 +1,6 @@
+# What It Does
+
+# Grants Send As permission to a user for a distribution group.
+# This means the user can send emails as the distribution group, and recipients will see the email as coming from the group, not the individual user.
+
+Add-RecipientPermission -Identity "GroupName" -Trustee "UserName" -AccessRights SendAs
