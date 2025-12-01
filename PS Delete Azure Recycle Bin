@@ -1,0 +1,9 @@
+# Use Case
+
+# Cleaning up old accounts after offboarding.
+# Ensuring compliance by removing sensitive accounts permanently.
+
+Connect-MsolService
+Get-MsolUser -ReturnDeleteUsers
+
+Remove-MsolUser -UserprincipalName "UPN@domain.onmicrosoft.com" -RemoveFromRecycleBin
