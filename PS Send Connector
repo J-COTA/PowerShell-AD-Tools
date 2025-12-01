@@ -1,0 +1,9 @@
+# Retrieve details of a specific Send Connector in Exchange
+# Replace <ConnectorName> with the actual name of your Send Connector
+
+Get-SendConnector "<ConnectorName>" | Format-List *
+
+# Use Case
+
+# Useful for auditing or troubleshooting mail flow in Exchange environments.
+# Common in hybrid setups to verify connectors routing mail to Office 365 or external domains.
