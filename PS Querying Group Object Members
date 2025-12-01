@@ -31,3 +31,7 @@ Get-DistributionGroupMember -Identity $groupId | ForEach-Object {
         EmailAddress   = $member.PrimarySmtpAddress
     }
 } | Export-Csv -Path $out -NoTypeInformation -Encoding UTF8
+
+# older Version
+
+Get-ADGroupMember -Identity "Group_Name " | Select samAccountName,Name, @{Name="DisplayName";Expression={(Get-ADUser $_.distinguishedName -Properties Displayname).Displayname}}, @{Name="Title";Expression={(Get-ADUser $_.distinguishedName -Properties Title).title}} | Export-CSV "C:\Dir\usrname\Desktop\Group_Name.csv"
