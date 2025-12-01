@@ -1,0 +1,52 @@
+# Enable Mail User
+Enable-MailUser -Identity <user> -ExternalEmailAddress <external address>
+
+# Converts an existing Active Directory user into a mail-enabled user.
+# The user does not get a mailbox; email is forwarded to the external address.
+
+# Remote Mailbox Settings
+Set-RemoteMailbox <user> –HiddenFromAddressListsEnabled $true
+Set-RemoteMailbox <user> -AcceptMessagesOnlyFrom <specific sender>
+
+# Modifies properties of a remote mailbox (used in hybrid Exchange environments).
+# Hide from address lists or restrict who can send messages.
+
+# Mailbox Auto Reply
+Set-MailboxAutoReplyConfiguration –Identity '<user>' –AutoReplyState Enabled –InternalMessage "message" –ExternalMessage "message"
+
+# Configures automatic replies (Out of Office) for a mailbox.
+# Allows separate internal and external messages.
+
+# Client Access Settings
+Set-CASMailbox –Identity <user> –OWAEnabled $false
+Set-CASMailbox –Identity <user> –MapiEnabled $false
+
+# Controls mailbox access protocols.
+# Disables Outlook Web Access or MAPI connectivity.
+
+# Distribution Group Creation
+New-DistributionGroup -Name "<group name>" -DisplayName "<display name>" -Alias <alias> -PrimarySmtpAddress <email> -Members <member1>, <member2>, <member3> –ManagedBy <manager>
+
+# Creates a new distribution group with specified members and manager.
+
+# Mail Contact Creation
+New-MailContact -Name "<contact name>" -ExternalEmailAddress <external email> -OrganizationalUnit "<OU path>"
+
+# Creates a mail contact for an external email address.
+# Useful for adding external recipients to distribution lists.
+
+# Add Member to Distribution Group
+Add-DistributionGroupMember -Identity "<group name>" -Member "<user>"
+
+# Adds a user or contact to an existing distribution group.
+
+# Enable Remote Mailbox
+Enable-RemoteMailbox <user> -RemoteRoutingAddress "<routing address>"
+
+# Creates a remote mailbox for a user in a hybrid environment.
+# Links the on-prem AD user to an Exchange Online mailbox.
+
+# Disable Remote Mailbox
+Disable-RemoteMailbox –Identity <user>
+
+# Removes the remote mailbox association without deleting the AD account.
