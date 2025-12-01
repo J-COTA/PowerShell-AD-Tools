@@ -1,0 +1,24 @@
+#This command is used in Exchange Server or Exchange Online PowerShell to analyze message delivery and calculate latency for a specific email.
+
+
+param (
+    [Parameter(Mandatory=$true)]
+    [string]$Sender,
+
+    [Parameter(Mandatory=$true)]
+    [string]$Recipient,
+
+    [Parameter(Mandatory=$true)]
+    [datetime]$StartDate,
+
+    [Parameter(Mandatory=$true)]
+    [string]$Subject,
+
+    [Parameter(Mandatory=$true)]
+    [string]$LatencyScriptPath
+)
+
+Get-MessageTrackingLog -Sender $Sender -Recipients $Recipient -Start $StartDate -MessageSubject $Subject |
+
+
+.\TrackMessageLatency.ps1 -Sender "user@example.com" -Recipient "recipient@example.com" -StartDate "03/01/2025" -Subject "Project Update" -LatencyScriptPath ".\\convertto-messagelatency.ps1"
