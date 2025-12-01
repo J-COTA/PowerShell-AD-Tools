@@ -1,0 +1,11 @@
+# What It Does Overall
+# Creates a CSV report of all users in a specific OU, including:
+
+# Their SamAccountName
+# Their legacyExchangeDN
+
+# This is often used for Exchange migrations, hybrid setups, or troubleshooting mail flow issues.
+
+Import-Module ActiveDirectory
+Get-ADUser -SearchBase "OU=<OUName>,DC=<Domain>,DC=<TLD>" -Filter * -Properties SamAccountName, legacyExchangeDN |
+Select-Object SamAccountName, legacyExchangeDN |
