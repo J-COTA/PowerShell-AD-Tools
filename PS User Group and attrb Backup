@@ -1,0 +1,90 @@
+# Folder Structure
+#  /AD-Backups├── README.md└── Scripts    ├── Backup-Groups.ps1    ├── Backup-Users-MemberOf.ps1    └── Backup-Users-AllAttributes.ps1Show more lines
+# You can adjust paths as needed; examples below use C:\Scripts\.
+
+# Scripts
+# 1) Backup AD Groups (members + memberof)
+
+# Backup-Groups.ps1
+Import-Module ActiveDirectory
+
+# Timestamp for file versioning
+$CurrentDate = Get-Date
+$Stamp = $CurrentDate.ToString('MM-dd-yyyy_hh-mm-ss')
+
+# Export all groups with memberof and member attributes
+Get-ADGroup -Filter * -Properties memberof, member |Select-Object name,
+  @{n='memberof'; e={ [string]$_.memberof }},
+  @{n='member'  ; e={ [string]$_.member   }} |
+Export-Csv "C:\Scripts\All_Groups_attrs_$Stamp.csv" -NoTypeInformation -Encoding UTF8
+
+# Show more lines
+
+# 2) Backup AD Users (memberof only)
+# Backup-Users-MemberOf.ps1
+Import-Module ActiveDirectory
+$CurrentDate = Get-Date
+$Stamp = $CurrentDate.ToString('MM-dd-yyyy_hh-mm-ss')
+Get-ADUser -Filter * -Properties memberof |Select-Object name, 
+  @{n='memberof'; e={ [string]$_.memberof }} |
+Export-Csv "C:\Scripts\All_Users_attrs_$Stamp.csv" -NoTypeInformation -Encoding UTF8Show more lines
+
+# 3) Backup AD Users (all attributes)
+# Backup-Users-AllAttributes.ps1
+Import-Module ActiveDirectory
+$CurrentDate = Get-Date$Stamp = $CurrentDate.ToString('MM-dd-yyyy_hh-mm-ss')
+
+# Export all user attributes (large dataset)
+Get-ADUser -Filter * -Properties * |
+Export-Csv "C:\Scripts\All_Users_All_attrs_$Stamp.csv" -NoTypeInformation -Encoding UTF8
+
+# Show more lines
+# How to Run
+
+# Open Windows PowerShell as Administrator.
+# Ensure the AD module is available:
+# PowerShellImport-Module ActiveDirectoryShow more lines
+
+# Execute each script:
+PowerShell.\Backup-Groups.ps1.\Backup-Users-MemberOf.ps1.\Backup-Users-AllAttributes.ps1
+
+# Show more lines
+
+# Schedule Weekly Task
+# Use Task Scheduler to automate weekly backups:
+
+# Open Task Scheduler → Create Task.
+# General: Run whether user is logged on or not; Run with highest privileges.
+# Triggers:
+
+# New → Weekly → choose day/time (e.g., Sunday 2:00 AM).
+
+# Actions:
+
+# Program/script: powershell.exe
+# Add arguments (example for Groups):
+# Plain Text-NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\Backup-Groups.ps1"Show more lines
+
+# Repeat for the other scripts or call a consolidated runner.
+
+# Conditions/Settings: As per your environment (e.g., only if AC power).
+# Save with a service account that has read permissions in AD.
+
+# Output & File Naming
+
+# Files are saved to C:\Scripts\ with a timestamp:
+
+All_Groups_attrs_MM-dd-yyyy_hh-mm-ss.csv
+All_Users_attrs_MM-dd-yyyy_hh-mm-ss.csv
+All_Users_All_attrs_MM-dd-yyyy_hh-mm-ss.csv
+
+# The timestamp ensures no overwrites and aids in retention/rotation strategies.
+
+# Validation
+# After a run, spot-check the CSVs:
+Import-Csv "C:\Scripts\All_Groups_attrs_*.csv" | Select-Object -First 5
+Import-Csv "C:\Scripts\All_Users_attrs_*.csv" | Select-Object -First 5
+Import-Csv "C:\Scripts\All_Users_All_attrs_*.csv" | Select-Object -First 5
+
+# Show more lines
+# Confirm expected columns exist (name, memberof, member) and that rows are populated.
