@@ -1,0 +1,7 @@
+# Admin “one-liners”
+# GRANT FULL MAILBOX ACCESS EXAMPLE 
+# 1. Launch the Exchange Management Shell and connect to Exchange Online
+# EXAMPLE
+#  The following example grants Sydney (sydneyl@domain.com) full access to Mike's (michaelri4@domain.com) mailbox.
+
+Add-MailboxPermission -Identity michaelri4@domain.com -User sydneyl@domain.com -AccessRights FullAccess
