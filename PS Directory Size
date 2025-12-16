@@ -1,0 +1,172 @@
+# This PowerShell script is a folder size reporting tool that generates an HTML report of folders and subfolders, 
+# including details about size, creation date, last modification, and ownership. Here’s a detailed breakdown of what it does:
+
+[CmdletBinding()]
+Param (
+    [Parameter(ValueFromPipeline)]
+    [string[]]$Paths = "\\Server\Share",
+
+    [string]$ReportPath = "C:\Reports",
+
+    [ValidateSet("Folder","Folders","Size","Created","Changed","Owner")]
+    [string]$Sort = "Folder",
+
+    [switch]$Descending,
+    [switch]$Recurse
+)
+
+Begin {
+    # Function to calculate folder object properties
+    Function AddObject {
+        Param ( 
+            $FileObject
+        )
+
+        $RawSize = (Get-ChildItem $FileObject.FullName -Recurse | Measure-Object Length -Sum).Sum
+
+        If ($RawSize) {
+            $Size = CalculateSize $RawSize
+        } Else {
+            $Size = "0.00 MB"
+        }
+
+        $Object = New-Object PSObject -Property @{
+            'Folder Name'    = $FileObject.FullName
+            'Created On'     = $FileObject.CreationTime
+            'Last Updated'   = $FileObject.LastWriteTime
+            Size             = $Size
+            Owner            = (Get-Acl $FileObject.FullName).Owner
+            RawSize          = $RawSize
+        }
+
+        Return $Object
+    }
+
+    # Function to convert bytes to MB/GB
+    Function CalculateSize {
+        Param ([double]$Size)
+
+        If ($Size -gt 1GB) {
+            $ReturnSize = "{0:N2} GB" -f ($Size / 1GB)
+        } Else {
+            $ReturnSize = "{0:N2} MB" -f ($Size / 1MB)
+        }
+
+        Return $ReturnSize
+    }
+
+    # Function to apply alternating row colors in HTML
+    Function Set-AlternatingRows {
+        [CmdletBinding()]
+        Param(
+            [Parameter(Mandatory=$True, ValueFromPipeline=$True)]
+            [object[]]$Lines,
+
+            [Parameter(Mandatory=$True)]
+            [string]$CSSEvenClass,
+
+            [Parameter(Mandatory=$True)]
+            [string]$CSSOddClass
+        )
+
+        Begin { $ClassName = $CSSEvenClass }
+
+        Process {
+            ForEach ($Line in $Lines) {
+                $Line = $Line.Replace("<tr>","<tr class=""$ClassName"">")
+                If ($ClassName -eq $CSSEvenClass) {
+                    $ClassName = $CSSOddClass
+                } Else {
+                    $ClassName = $CSSEvenClass
+                }
+                Return $Line
+            }
+        }
+    }
+
+    # Validate sort parameter
+    Switch -regex ($Sort) {
+        "^folder.?$" { $SortBy = "Folder Name"; Break }
+        "created"    { $SortBy = "Created On"; Break }
+        "changed"    { $SortBy = "Last Updated"; Break }
+        default      { $SortBy = $Sort }
+    }
+
+    $Report = @()
+    $TotalSize = 0
+    $NumDirs = 0
+    $Title = @()
+    Write-Verbose "$(Get-Date): Script begins!"
+}
+
+Process {
+    ForEach ($Path in $Paths) {
+        # Test if path exists
+        If (-not (Test-Path $Path)) {
+            $Result = New-Object PSObject -Property @{
+                'Folder Name'  = $Path
+                'Created On'   = ""
+                'Last Updated' = ""
+                Size           = ""
+                Owner          = "Path not found"
+                RawSize        = 0
+            }
+            $Report += $Result
+            $Title += $Path
+            Continue
+        }
+
+        # Collect root folder info
+        $NumDirs++
+        Write-Verbose "$(Get-Date): Now working on $Path..."
+        $Root = Get-Item -Path $Path
+        $Result = AddObject $Root
+        $TotalSize += $Result.RawSize
+        $Report += $Result
+        $Title += $Path
+
+        # Collect subfolder info
+        $ParamSplat = @{
+            Path    = $Path
+            Recurse = $Recurse
+        }
+
+        ForEach ($Folder in (Get-ChildItem @ParamSplat | Where-Object { $_.PSIsContainer })) {
+            $Report += AddObject $Folder
+            $NumDirs++
+        }
+    }
+}
+
+End {
+    # HTML styling and header
+    $Header = @"
+<style>
+TABLE {border-width: 1px; border-style: solid; border-color: black; border-collapse: collapse;}
+TH {border-width: 1px; padding: 3px; border-style: solid; border-color: black; background-color: #6495ED;}
+TD {border-width: 1px; padding: 3px; border-style: solid; border-color: black;}
+.odd  { background-color:#ffffff; }
+.even { background-color:#dddddd; }
+</style>
+<Title>Folder Sizes for "$($Paths -join ', ')"</Title>
+"@
+
+    $TotalSizeFormatted = CalculateSize $TotalSize
+
+    $Pre  = "<h1>Folder Sizes Report</h1><h3>Folders processed: ""$($Title -join ', ')""</h3>"
+    $Post = "<h2><p>Total Folders Processed: $NumDirs<br>Total Space Used:  $TotalSizeFormatted</p></h2>Run on $(Get-Date -f 'MM/dd/yyyy hh:mm:ss tt')</body></html>"
+
+    # Create the HTML report
+    $HTML = $Report |
+        Select 'Folder Name','Owner','Created On','Last Updated','Size' |
+        Sort-Object $SortBy -Descending:$Descending |
+        ConvertTo-Html -PreContent $Pre -PostContent $Post -Head $Header |
+        Set-AlternatingRows -CSSEvenClass even -CSSOddClass odd |
+        Out-File "$ReportPath\FolderSizes.html"
+
+    # Open the report in the default browser
+    & "$ReportPath\FolderSizes.html"
+
+    Write-Verbose "$(Get-Date): $NumDirs folders processed"
+    Write-Verbose "$(Get-Date): Script completed!"
+}
