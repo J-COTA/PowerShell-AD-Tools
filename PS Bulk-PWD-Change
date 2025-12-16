@@ -1,0 +1,8 @@
+# Change password by group membership
+
+Import-Module ActiveDirectory
+Import-Csv "…\ADUsers.csv" | ForEach-Object {
+ $samAccountName = $_."samAccountName"
+Get-ADUser -Identity $samAccountName | 
+ Set-ADUser -ChangePasswordAtLogon:$True
+}
