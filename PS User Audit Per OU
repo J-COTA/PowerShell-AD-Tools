@@ -1,0 +1,6 @@
+# User Audit Per OU
+
+$OUpath = 'OU=users,DC=domain,DC=com'
+$ExportPath = 'C:\Export.csv'
+Get-ADUser -Filter * -SearchBase $OUpath | Select-object
+DistinguishedName,Name,UserPrincipalName | Export-Csv -NoType $ExportPath
