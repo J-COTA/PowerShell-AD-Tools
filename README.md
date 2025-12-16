@@ -1,6 +1,6 @@
 # Hi, I'm Cota
 
-I'm a Systems Administrator & Cybersecurity Professional with 20+ years of hands-on experience supporting enterprise networks, Azure environments, and DoD systems.
+I'm a Systems Administrator & Cybersecurity Professional with 20+ years of hands-on experience supporting enterprise networks, Azure environments, and DoD systems. Most of these scripts are legacy but knowledge never dies, only forgotten.
 
 ## What I Focus On
 - **PowerShell Automation & Tool Development**  
@@ -27,7 +27,7 @@ I'm a Systems Administrator & Cybersecurity Professional with 20+ years of hands
 
 If my work helps you, feel free to **fork, contribute, or connect!**
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://www.linkedin.com/in/jefecota) 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)]((https://linkedin.com/in/Jocota)) 
 [![GitHub](https://img.shields.io/badge/GitHub-Follow-black?logo=github)](https://github.com/JefeCota)
 
 ---
