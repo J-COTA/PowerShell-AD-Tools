@@ -1,0 +1,2 @@
+# Adding emails to Mailbox
+Add-MailboxPermission -AccessRights <MailboxRights[]> -Identity <MailboxIdParameter> -User <SecurityPrincipalIdParameter> [-AutoMapping <$true | $false>] [-Deny <SwitchParameter>] [-InheritanceType <None | All | Descendents | SelfAndChildren | Children>] <COMMON PARAMETERS>
