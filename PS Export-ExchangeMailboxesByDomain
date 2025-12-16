@@ -1,0 +1,7 @@
+# What this is typically used for
+# Auditing mailboxes on a specific email domain
+# Finding test or legacy domains
+# Pre-migration validation
+# Compliance / inventory reporting
+
+Get-CASMailbox -ResultSize unlimited | where {$_.primarysmtpaddress -like "*@domain.test"} | select name, primarysmtpaddress | Export-CSV c:\temp\file.csv
