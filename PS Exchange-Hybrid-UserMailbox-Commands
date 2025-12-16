@@ -1,0 +1,8 @@
+# To create new mailbox, contact and Office 365 at same time:
+Enable-remotemailbox USERID@ADdomain.com -RemoteRoutingAddress “USERID@domain.mail.onmicrosoft.com”
+
+# Get-Recipient -Identity
+Get-Recipient -Identity: Get-Recipient -Identity EMAIL@domain.com
+
+# FORWARDING EMAIL 
+Set-Mailbox -Identity "User.Name@domain.com" -DeliverToMailboxAndForward $true -ForwardingSMTPAddress "user.name2@domain.com" 
