@@ -1,0 +1,8 @@
+# Download the latest version from the PowerShell Gallery (https://www.powershellgallery.com/packages/NTFSSecurity)
+# You can look up the latest version directly from PowerShell...
+# Find-Module -Name NTFSSecurity
+# ...and also install it from there
+
+Install-Module -Name NTFSSecurity -force
+
+Import-Module NTFSSecurity
