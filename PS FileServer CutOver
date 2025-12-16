@@ -1,3 +1,23 @@
 # This is a PowerShell script that scans Windows shortcut files (.lnk) and updates their target paths, replacing an old network UNC path with a new one. Right now it is configured to only simulate the changes (dry run).
 
-"$oldPrefix = "\\OldServer\Share" $newPrefix = "\\NewServer\Share" $searchPath = "C:\Users\Account\Desktop\Job Specific" $dryRun = $TRUE $shell = new-object -com wscript.shell if ( $dryRun ) { write-host "Executing dry run" -foregroundcolor green -backgroundcolor black } else { write-host "Executing real run" -foregroundcolor red -backgroundcolor black } dir $searchPath -filter *.lnk -recurse | foreach { $lnk = $shell.createShortcut( $_.fullname ) $oldPath= $lnk.targetPath $lnkRegex = "^" + [regex]::escape( $oldPrefix ) if ( $oldPath -match $lnkRegex ) { $newPath = $oldPath -replace $lnkRegex, $newPrefix write-host "Found: " + $_.fullname -foregroundcolor yellow -backgroundcolor black write-host " Replace: " + $oldPath write-host " With: " + $newPath if ( !$dryRun ) { $lnk.targetPath = $newPath $lnk.Save() } } }"
+$oldPrefix = "\\OldServer\Share" 
+$newPrefix = "\\NewServer\Share" 
+$searchPath = "C:\Users\Account\Desktop\Job Specific" 
+
+$dryRun = $TRUE 
+
+$shell = new-object -com wscript.shell '
+if ( $dryRun ) { write-host "Executing dry run" -foregroundcolor green -backgroundcolor black '
+} else { 
+write-host "Executing real run" -foregroundcolor red -backgroundcolor black 
+} dir $searchPath -filter *.lnk -recurse | foreach { 
+$lnk = $shell.createShortcut( $_.fullname ) 
+
+$oldPath= $lnk.targetPath '
+$lnkRegex = "^" + [regex]::escape( $oldPrefix ) if ( $oldPath -match $lnkRegex ) '
+{ $newPath = $oldPath -replace $lnkRegex, $newPrefix write-host "Found: " + $_.fullname 
+-foregroundcolor yellow -backgroundcolor black write-host " Replace: " + $oldPath write-host " With: " + $newPath if 
+( !$dryRun ) { $lnk.targetPath = $newPath $lnk.Save() 
+} 
+} 
+}
