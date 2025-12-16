@@ -1,0 +1,12 @@
+# View current External sender configuration
+Get-ExternalInOutlook
+
+# Enable External sender indicator in Outlook
+Set-ExternalInOutlook -Enabled $true
+
+# Add trusted external domains to the allow list
+Set-ExternalInOutlook -AllowList @{ Add = "partnerdomain1.example" }
+Set-ExternalInOutlook -AllowList @{ Add = "partnerdomain2.example" }
+
+# Verify configuration
+Get-ExternalInOutlook
