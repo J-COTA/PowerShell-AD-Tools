@@ -1,0 +1,5 @@
+# Get manager information on users.
+
+Import-Csv "C:\Import.csv" |
+ForEach-Object -Process {Get-Manager $_.UserPrincipalName} |
+Export-CSV "‪C:\ManagerList.csv" -noType
