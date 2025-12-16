@@ -1,0 +1,7 @@
+# This gets AD User data from Email address 
+
+$csv = Import-CSV C:\Import.csv
+foreach($user in $csv){
+    $userMail = $user.mail
+    Get-ADUser -Filter {mail -eq $userMail} | Export-CSV "C:\export.csv"
+}
