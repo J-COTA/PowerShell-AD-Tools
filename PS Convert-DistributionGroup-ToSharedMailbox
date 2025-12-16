@@ -1,0 +1,13 @@
+# Get LegacyExchangeDN from existing distribution group
+Get-DistributionGroup "ExistingGroupName" |
+Select-Object LegacyExchangeDN
+
+# Create a new shared mailbox
+New-Mailbox "SharedMailboxName" `
+  -Shared `
+  -UserPrincipalName sharedmailbox@contoso.com
+
+# Grant Full Access permissions to a user
+Add-MailboxPermission "shared.mailbox" `
+  -User "User Display Name" `
+  -AccessRights FullAccess
