@@ -22,3 +22,28 @@ Import-Csv "C:\input1.csv" | ForEach-Object {
     }
 
 } | Export-Csv "C:\output1.csv" -NoTypeInformation
+
+
+
+# OR
+
+Import-Module ActiveDirectory
+
+$results = foreach ($name in Get-Content "C:\DisplayName.csv") {
+
+    $user = Get-ADUser -Filter "DisplayName -eq '$name'" `
+                       -Server "Domain name" `
+                       -ErrorAction SilentlyContinue
+
+    if ($user) {
+        $user | Select Name, SamAccountName
+    }
+    else {
+        [PSCustomObject]@{
+            Name           = $name
+            SamAccountName = "NOT FOUND"
+        }
+    }
+}
+
+$results | Export-Csv "C:\Samaccountname.csv" -NoTypeInformation
