@@ -1,0 +1,48 @@
+# This PowerShell script builds a CSV report mapping Active Directory groups to their user members.
+
+$ExportLocation = "c:\user\Accounts\desktop\ADAxport.csv"
+ 
+# Get a list of all Active Directory groups
+$ADGroupNames = Get-ADGroup -Filter * | Sort-Object Name | Select-Object Name, SamAccountName
+$ExportData = @()
+ 
+# Set the current index to 1 (Used for a progress bar)
+$currentIndex = 1
+ 
+# Loop through all groups
+foreach ($GroupName in $ADGroupNames) {
+
+    # Show a nice progress bar
+    Write-Progress -Id 0 `
+        -Activity "Building report from Active Directory" `
+        -Status "$currentIndex of $($ADGroupNames.Count)" `
+        -PercentComplete (($currentIndex / $ADGroupNames.Count) * 100)
+ 
+    # Get all membership of a given group and select only the users
+    $GroupMembership = Get-ADGroupMember -Identity $GroupName.SamAccountName -Recursive |
+                       Where-Object { $_.objectClass -eq "user" } |
+                       Select-Object distinguishedName
+
+    # Retrieve users (no additional properties requested)
+    $GroupMembershipUsers = $GroupMembership |
+                            ForEach-Object {
+                                Get-ADUser -Identity $_.distinguishedName
+                            } |
+                            Select-Object Name
+ 
+    # For each member add a new object to the ExportData array
+    foreach ($User in $GroupMembershipUsers) {
+        $ExportData += [PSCustomObject]@{
+            Group = $GroupName.Name
+            User  = $User.Name
+        }
+    }
+ 
+    # Increment the index
+    $currentIndex++
+}
+ 
+# Reset the progress bar
+Write-Progress -Id 0 -Activity " " -Status " " -Completed
+ 
+$ExportData | Export-Csv -Path $ExportLocation -NoTypeInformation
