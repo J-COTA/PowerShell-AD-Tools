@@ -1,0 +1,10 @@
+# This process works with display names, email address, and samname.
+# 	1. Create Text file that has a single column list of names.
+# 	2. Save the file locally on your machine. Note the location example:
+# 		C:\Import\Users.txt
+# 	3. Note which AD group or DL the users will need to be added to, example: Group POST HELP
+# 	4. Open PowerShell run the following command, Import-Module ActiveDirectory
+# 	5. Run the following command, Add-PSSnapin Quest.ActiveRoles.ADManagement 
+# Run the following command, 
+
+Get-Content ‪C:\Users\COTA\Desktop\UserList.txt | Add-QADGroupMember "GroupName" -ErrorAction SilentlyContinue
