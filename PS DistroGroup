@@ -1,0 +1,2 @@
+# New Distro Group
+New-DistributionGroup -Name "GroupName" -DisplayName "Group Name"  -Alias GroupName -PrimarySmtpAddress GroupName@domain.com -Members User1@domain.com, User2@domain.com, User3@domain.com –ManagedBy User1@domain.com
