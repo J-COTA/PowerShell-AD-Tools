@@ -1,0 +1,23 @@
+# Exporting User Account and Password Information
+
+$Properties = @( 
+ 'DisplayName',
+ 'SamAccountName',
+ 'Enabled',
+ 'Created',
+ 'AccountExpirationDate',
+ 'LastLogonDate',
+ 'PasswordLastSet',
+ 'EmailAddress'
+)
+
+Get-ADUser -Filter * -SearchBase "dc=somedomain,dc=tld" -Properties $Properties | 
+ Select $Properties |
+ Export-Csv c:\DominAccountsPasswordInfoDump.csv -NoTypeInformation
+
+# Exporting AD Object Information
+$Properties = @('DisplayName','SamAccountName','division','employeeid','EmailAddress')
+
+Get-ADObject -Filter * -SearchBase "specific OU or container" -Properties $Properties | 
+ Select $Properties |
+ Export-Csv c:\export\AccountsInfoDump.csv -NoTypeInformation
