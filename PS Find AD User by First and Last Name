@@ -1,0 +1,17 @@
+# This PowerShell script reads a list of users from a CSV file, searches Active Directory for matching user accounts, and outputs their account details.
+
+Import-Csv "C:\Input.csv" |
+ForEach-Object {
+    Get-ADUser -Filter "GivenName -eq '$($_.FirstName)' -and Surname -eq '$($_.LastName)'" `
+               -Properties EmailAddress
+} |
+Select-Object Name, EmailAddress, SamAccountName, GivenName, Surname
+
+
+Import-Csv "Input.csv" |
+ForEach-Object {
+    Get-ADUser -Filter "GivenName -eq '$($_.FirstName)' -and Surname -eq '$($_.LastName)'" `
+               -Properties EmailAddress
+} |
+Select-Object Name, EmailAddress, SamAccountName, GivenName, Surname |
+Export-Csv "C:\Path\To\Output.csv" -NoTypeInformation
