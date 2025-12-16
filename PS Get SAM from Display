@@ -1,0 +1,24 @@
+# This is a PowerShell script that looks up Active Directory users based on a CSV file and exports some of their account details.
+
+Import-Module ActiveDirectory
+
+Import-Csv "C:\input1.csv" | ForEach-Object {
+
+    $user = Get-ADUser -Filter "DisplayName -eq '$($_.DisplayName)'" `
+                       -Properties SamAccountName `
+                       -ErrorAction SilentlyContinue
+
+    if ($user) {
+        [PSCustomObject]@{
+            Name            = $user.Name
+            SamAccountName  = $user.SamAccountName
+        }
+    }
+    else {
+        [PSCustomObject]@{
+            Name            = $_.DisplayName
+            SamAccountName  = "NOT FOUND"
+        }
+    }
+
+} | Export-Csv "C:\output1.csv" -NoTypeInformation
