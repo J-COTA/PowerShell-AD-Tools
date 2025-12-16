@@ -1,0 +1,34 @@
+# The script prompts for a username, validates that the account exists in Active Directory, then scans all enabled computers in AD to determine which machines the user is actively logged into.
+
+Import-Module ActiveDirectory
+Add-PSSnapin Quest.ActiveRoles.ADManagement 
+
+Function Get-Username {
+$Global:Username = Read-Host "Enter username you want to search for"
+if ($Username -eq $null){
+	Write-Host "Username cannot be blank, please re-enter username!!!!!"
+	Get-Username}
+$UserCheck = Get-QADUser -SamAccountName $Username
+if ($UserCheck -eq $null){
+	Write-Host "Invalid username, please verify this is the logon id for the account"
+	Get-Username}
+}
+
+get-username
+
+$computers = Get-QADComputer | where {$_.accountisdisabled -eq $false}
+foreach ($comp in $computers)
+	{
+	$Computer = $comp.Name
+	$ping = new-object System.Net.NetworkInformation.Ping
+  	$Reply = $null
+  	$Reply = $ping.send($Computer)
+  	if($Reply.status -like 'Success'){
+		#Get explorer.exe processes
+		$proc = gwmi win32_process -computer $Computer -Filter "Name = 'explorer.exe'"
+		#Search collection of processes for username
+		ForEach ($p in $proc) {
+	    	$temp = ($p.GetOwner()).User
+	  		if ($temp -eq $Username){
+			write-host "$Username is logged on $Computer"
+}}}}
