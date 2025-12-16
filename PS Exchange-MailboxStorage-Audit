@@ -1,0 +1,9 @@
+# Exchange PowerShell script to find all users mailbox sizes
+Get-MailboxStatistics -Server 'SERVERNAME' |
+Where-Object { $_.ObjectClass -eq "Mailbox" } |
+Sort-Object TotalItemSize -Descending |
+Format-Table `
+  @{Label="User"; Expression={ $_.DisplayName }},
+  @{Label="Total Size (MB)"; Expression={ $_.TotalItemSize.Value.ToMB() }} `
+  -AutoSize >>
+"C:\Temp\mailbox_size.txt"
