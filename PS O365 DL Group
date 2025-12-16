@@ -1,0 +1,2 @@
+# New Distro Group
+New-DistributionGroup -Name <DL name> -DisplayName <DG display name> -Alias <Alias> -PrimarySmtpAddress <Email Address> -Members <member1@domain.com, member2@domain.com, member3@domain.com> –ManagedBy <Owner>
