@@ -1,0 +1,10 @@
+# AD groups Change Managedby with CSV
+
+$newUser = 'Valid SamAccountName'
+$userDN = Get-AdUser $SamAccountName |select -exp DistinguishedName
+
+$groups = Get-AdGroup -prop ManagedBy |where {$_.ManagedBy -contains $userDN} | select -exp name
+
+foreach ($group in $groups) {
+    Set-AdGroup $group -ManagedBy $newUser
+}
