@@ -1,0 +1,19 @@
+This PowerShell script finds all Active Directory groups that are managed by a specific user and outputs key details about those groups.
+
+# Distinguished Name of the user
+$DN = "CN=TestUser,OU=User,DC=domain,DC=com"
+
+# Retrieve the groups managed by this user
+([ADSISearcher]"(&(objectCategory=group)(ManagedBy=$DN))").findall()
+
+$DN = "CN=TestUser,OU=User,DC=domain,DC=com"
+([ADSISearcher]"(&(objectCategory=group)(ManagedBy=$DN))").findall().properties |
+ForEach-Object -Process {
+
+# Output the current object with only Name, DN and ManagedBy properties
+    [pscustomobject][ordered]@{
+        GroupName = $Psitem.name -as [string]
+        GroupDistinguishedName = $Psitem.distinguishedname -as [string]
+        GroupManagedby = $Psitem.managedby -as [string]
+    }
+}
