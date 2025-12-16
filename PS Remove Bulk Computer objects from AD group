@@ -1,0 +1,4 @@
+# Remove Bulk Computer objects from AD group.
+
+$computers = Get-Content $path\objectlist.txt | Get-ADComputer -ErrorAction Continue
+Remove-ADGroupMember -Identity GROUPNAME -Member $computers 
