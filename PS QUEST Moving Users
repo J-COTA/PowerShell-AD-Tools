@@ -1,0 +1,7 @@
+# Moving 500 members to new OU location
+# 1. Note which AD group or DL the users will need to be added to, example: Mentorcliq Access
+# 2. Open PowerShell run the following command, Import-Module Active Directory
+# 3. Run the following command, Add-PSSnapin Quest.ActiveRoles.ADManagement 
+# Run the following command, 
+
+Get-Content C:\Export\import.txt | Move-QADObject -NewParentContainer 'OU=Users,OU=New York,OU=North America,DC=domain,DC=com'
