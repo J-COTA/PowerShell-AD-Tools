@@ -1,0 +1,133 @@
+#Requires -Modules @{ ModuleName="Microsoft.Graph.Authentication"; ModuleVersion="2.0" }, `
+                 @{ ModuleName="Microsoft.Graph.Users"; ModuleVersion="2.0" }, `
+                 @{ ModuleName="ActiveDirectory"; ModuleVersion="1.0" }, `
+                 @{ ModuleName="AdSync"; ModuleVersion="1.0" }
+
+<#
+.SYNOPSIS
+Hard-match an existing Active Directory user with their cloud counterpart in Microsoft 365 using Microsoft Graph SDK.
+.DESCRIPTION
+This script sets the immutable ID (based on on-prem ObjectGUID) on a cloud-only Microsoft 365 user to enable DirSync-based hard-linking.
+Author: HackerAI Assistant
+#>
+
+param (
+    [Parameter(Mandatory)]
+    [string]$ADUserSamAccountName,
+
+    [Parameter(Mandatory)]
+    [string]$CloudUPN
+)
+
+begin {
+    try {
+        Write-Host "=== Starting Hard Match Process ===" -ForegroundColor Cyan
+
+        # Load required modules
+        Import-Module ActiveDirectory -Force
+        Import-Module Microsoft.Graph.Authentication -Force
+        Import-Module Microsoft.Graph.Users -Force
+        Import-Module ADSync -Force -ErrorAction Stop
+    } catch {
+        throw "Failed to load required modules. Install: Microsoft.Graph.Authentication, Microsoft.Graph.Users, ActiveDirectory, and ADSync."
+    }
+}
+
+process {
+    try {
+
+        ### Step 1: Confirm No Conflicts Locally in AD
+        Write-Host "`nChecking for duplicate ProxyAddresses in local AD..."
+        $duplicates = Get-ADObject -Filter { ProxyAddresses -like "*$CloudUPN*" } -Properties ProxyAddresses
+
+        if ($duplicates.Count -gt 1) {
+            Write-Host "`nFAIL: Multiple AD objects share ProxyAddress $CloudUPN`: see below:" -ForegroundColor Red
+            $duplicates | Select-Object Name,DistinguishedName,ProxyAddresses | Format-List
+            throw "Duplicate ProxyAddresses found in AD. Resolve before proceeding."
+        } elseif ($duplicates.Count -eq 1) {
+            Write-Host "OK: No duplicates in AD. Proceeding..." -ForegroundColor Green
+        } else {
+            Write-Host "INFO: No matching AD object has ProxyAddress '$CloudUPN' yet. Continuing." -ForegroundColor Yellow
+        }
+
+
+        ### Step 2: Fetch ObjectGUID From On-Prem AD User
+        Write-Host "`nFetching ObjectGUID for local AD user: $ADUserSamAccountName ..."
+        $adUser = Get-ADUser -Identity $ADUserSamAccountName -Properties ObjectGUID
+        $guid = $adUser.ObjectGUID
+
+        if (-not $guid) {
+            throw "Could not retrieve ObjectGUID for local user: $ADUserSamAccountName"
+        }
+
+        Write-Host "Fetched ObjectGUID: $($guid.Guid)"
+        $bytes = $guid.ToByteArray()
+        $immutableId = [Convert]::ToBase64String($bytes)
+        Write-Host "Converted ImmutableID (base64): $immutableId"
+
+
+        ### Step 3: Connect to Microsoft Graph
+        Write-Host "`nConnecting to Microsoft Graph API (you may be prompted for credentials)..."
+
+        $scopes = @("User.ReadWrite.All", "Organization.Read.All")
+        Connect-MgGraph -Scopes $scopes
+
+
+        ### Step 4: Validate Cloud User Exists
+        Write-Host "`nSearching for cloud user with UPN '$CloudUPN'..."
+
+        try {
+            $mgUser = Get-MgUser -UserId $CloudUPN -Property Id,DisplayName,UserPrincipalName,ProxyAddresses,ImmutableId
+        } catch [Microsoft.Graph.PowerShell.Runtime.RestException] {
+            $_ErrorDetails = $_.Exception.Response | Get-Content
+            Write-Warning "API Error Response: $_ErrorDetails"
+            throw "User was not found via Graph REST endpoint: $CloudUPN"
+        }
+
+        if (-not $mgUser) {
+            throw "No user exists in the cloud under UserPrincipalName: $CloudUPN"
+        } else {
+            Write-Host "Found user: $($mgUser.DisplayName) ($($mgUser.UserPrincipalName))"
+        }
+
+
+        ### Step 5: Confirm Matching Attributes Before Update
+        $smtpProxyMatch = $mgUser.ProxyAddresses | Where-Object { $_ -ceq "SMTP:$CloudUPN" }
+
+        if ($smtpProxyMatch.Count -eq 0) {
+            Write-Warning "User does not currently have primary SMTP address '$CloudUPN', consider adding it manually unless part of sync."
+        }
+
+
+        ### Step 6: Set ImmutableID using Patch Request via Microsoft Graph
+        Write-Host "`nPatching Cloud User to assign ImmutableID = $immutableId..."
+
+        $body = @{
+            onPremisesImmutableId = $immutableId
+        }
+
+        Update-MgUser -UserId $CloudUPN -BodyParameter $body
+
+        Write-Host "SUCCESS: ImmutableID updated in Microsoft 365." -ForegroundColor Green
+
+
+        ### Step 7: Trigger Azure AD Connect Delta Sync
+        Write-Host "`nInitiating Azure AD Connect Delta Sync..."
+
+        Start-ADSyncSyncCycle -PolicyType Delta
+
+        Write-Host "Delta sync cycle started." -ForegroundColor Green
+        Write-Host "`n=== Process Complete. The accounts are now expected to be synchronized. ===" -ForegroundColor Cyan
+
+    } catch {
+        Write-Host "`n[ERROR]: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host $_.ScriptStackTrace
+    }
+}
+
+end {
+    # Optional: Disconnect gracefully from session
+    # Disconnect-MgGraph
+    Write-Host "`nPress any key to exit..."
+    [void][System.Console]::ReadKey($true)
+}
