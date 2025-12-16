@@ -1,0 +1,3 @@
+# Delete Calendar events for term accounts.
+
+Remove-CalendarEvents -Identity user@domain.com -CancelOrganizedMeetings
