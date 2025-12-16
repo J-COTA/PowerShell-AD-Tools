@@ -7,3 +7,4 @@
 # 	5. Run the following command, Add-PSSnapin Quest.ActiveRoles.ADManagement 
 # Run the following command, 
 
+Get-Content ‪C:\Users\COTA\Desktop\UserList.txt | Add-QADGroupMember "GroupName" -ErrorAction SilentlyContinue
