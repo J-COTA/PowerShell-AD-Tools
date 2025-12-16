@@ -1,0 +1,5 @@
+# This PowerShell pipeline copies group memberships from one user to another in Active Directory.
+
+Get-ADUser -Identity user1 -Properties memberof |
+Select-Object -ExpandProperty memberof |
+Add-ADGroupMember -Members User2
