@@ -1,3 +1,19 @@
 # Delete Calendar events for term accounts.
 
 Remove-CalendarEvents -Identity user@domain.com -CancelOrganizedMeetings
+
+# Cancelling Every Meeting
+# The following cmdlet cancels every meeting in the terminated user’s calendar.
+# This will be the most common use of this new process.
+
+Remove-CalendarEvents -Identity [user email address] -CancelOrganizedMeetings
+
+# Cancelling Meeting within Date Range
+# This example is to remove the select events within a particular date range.
+
+Remove-CalendarEvents -Identity [user email address] -CancelOrganizedMeetings -QueryStartDate 11-1-2018 -QueryWindowInDays 120
+
+# Preview Cancelled Meetings
+# This allows the ability to preview what meetings would be cancelled on the terminated user’s account without making any changes.
+
+Remove-CalendarEvents -Identity [user email address] -CancelOrganizedMeetings -QueryStartDate 9-1-2018 -QueryWindowInDays 90 -PreviewOnly -Verbose
