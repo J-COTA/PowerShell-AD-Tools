@@ -1,0 +1,4 @@
+# Find all groups a user is the owner of
+
+Search with distinguishedName change Value
+([adsisearcher]'managedby=CN=Elizabeth,OU=data1,OU=Users,OU=Domestic,DC=domain,DC=com').FindAll()
