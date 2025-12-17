@@ -1,0 +1,14 @@
+# Create Bulk Computer Objects
+
+$CSV=‘C:\Import\mac.csv’
+$OU=‘OU=Provisioning,OU=Computers,DC=domain,DC=com’
+Import-Csv -Path $CSV | ForEach-Object { New-ADComputer -Name $_.Computer -Path $OU -Enabled $True}
+
+# Move Bulk Objects
+
+$ComputersPath= Import-Csv -Path "C:\Import.csv"
+$TargetOU = "OU=Production,OU=Computers,DC=domain,DC=com"
+foreach ($item in $ComputersPath){
+	$computer = Get-ADComputer $item.CompName
+	Move-ADObject -Identity $computer.DistinguishedName -TargetPath $TargetOU -Confirm:$false
+Write-Host Computer account $computer.Name has been moved successfully}
