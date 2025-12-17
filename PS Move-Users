@@ -1,0 +1,26 @@
+# The following will move Accounts using SamAccountName to desired OU and double check if accounts are disabled. 
+
+# import csv
+$UsersToDisableList=IMPORT-CSV C:\Users\joe.cota\Desktop\DisplayName.csv
+Clear-Host 
+
+Function DisableUsers{  
+    Param( 
+        [string] $_SamAccountName        
+        )
+
+    write-host ("User: $_SamAccountName") 
+       
+    # disable user
+    Set-aduser -Identity $_SamAccountName -enabled $false
+
+    # move user
+    Get-aduser $_SamAccountName | Move-adobject -targetpath 'CN=Organizational-Unit,CN=Schema,CN=Configuration,DC=ndti,DC=net'
+}
+
+#foreach loop
+foreach($User in $UsersToDisableList){
+    DisableUsers $User.SamAccountName
+}
+
+Create CSV File with two columns: One called "SamAccountName" and the other "MoveTOOU."
