@@ -1,0 +1,29 @@
+# Remove Bulk Users from AD group
+
+ForEach ($item in (Import-CSV "‪C:\Import.csv")) {
+$email = $item.mail
+ Get-ADObject -Filter { mail -eq $Email } -Properties memberof |Foreach{Set-ADGroup  -Identity 'GROUP' -Remove @{member=$_.distinguishedname}}
+
+  }
+
+# Removing with UserID
+
+$users = import-csv ‪C:\Import.csv
+Foreach ($user in $users){
+Remove-adgroupmember -identity "Group" -members $user.usernames -Confirm:$false
+}
+
+# Adding with UserID
+
+$users = import-csv ‪C:\Import.csv
+Foreach ($user in $users){
+add-adgroupmember -identity "Group" -members $user.usernames -Confirm:$false
+}
+
+# Adding with Email Adress
+
+ForEach ($item in (Import-CSV "‪C:\Import.csv")) {
+$email = $item.mail
+ Get-ADObject -Filter { mail -eq $Email } -Properties memberof |Foreach{Set-ADGroup  -Identity 'Group' -Add @{member=$_.distinguishedname}}
+
+  }
