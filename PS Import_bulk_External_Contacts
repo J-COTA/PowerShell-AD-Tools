@@ -1,0 +1,1 @@
+Import-Csv C:\Import.csv|%{New-MailContact -Name $_.Name -DisplayName $_.Name -ExternalEmailAddress $_.ExternalEmailAddress -OrganizationalUnit "domain.com/ExternalContacts"}
