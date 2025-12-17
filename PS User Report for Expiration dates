@@ -1,0 +1,3 @@
+Get-ADUser -SearchBase "OU=Name,DC=domain,DC=com" -filter {enabled -eq "True"} –Properties name,emailaddress,accountexpirationdate,manager |
+Select-Object  name,emailaddress,accountexpirationdate,@{n='Manager';e={(Get-aduser $_.manager).name}} | 
+Export-csv -path C:\export.csv -NoTypeInformation
