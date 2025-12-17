@@ -1,0 +1,4 @@
+# Bulk Check if AD users are enabled or disabled
+
+Get-Content C:\DATA.txt | Get-ADUser | select 
+name,SamAccountName,AccountExpirationDate,manager,Enabled | Export-Csv C:\DATA2.csv
