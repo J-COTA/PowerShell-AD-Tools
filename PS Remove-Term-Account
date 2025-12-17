@@ -1,0 +1,43 @@
+# The following will Remove all AD groups, double check to move Term OU, and create Account snapshot of AD groups removed. 
+
+# Quest's Management shell for active directory needs to be installed on the machine from where this script will be executed.
+# Powershell Active Directory Module needs to be loaded.
+
+# User's SAMaccount names will be stores in users.txt file (one per line)
+Add-PSSnapin Quest.ActiveRoles.ADManagement 
+
+$a = Get-Content "C:\UserList.txt"
+ 
+foreach ($i in $a) {
+  
+# Disable user account and Move to the Disabled user's OU.
+Disable-ADAccount -Identity $i -Server ServerName.domain.com
+
+Get-ADUser $i -Server ServerName.domain.com| Move-ADObject -TargetPath 'OU=Name,OU=Terminations,OU=Location,DC=domain,DC=com'
+
+# Get all group memberships
+
+$groups = get-adprincipalgroupmembership $i -Server ServerName.domain.com;
+ 
+# Loop through each group
+foreach ($group in $groups) {
+ 
+    # Exclude Domain Users group
+    if ($group.name -ne "domain users") {
+ 
+        $user= "UNC\" + $i
+
+        # Remove all groups from users membership except the Domain Users group.
+
+       Remove-QADGroupMember -Identity $group.distinguishedName -Member $user
+ 
+        # Write progress to screen
+        write-host "removed" $i "from" $group.name;
+ 
+        # Group membeship of each user will be saved in a text file named after the User's SAMaccount name in the specified location.
+        $grouplogfile = "C:\Export\Results" + $i + ".txt";
+        $group.name >> $grouplogfile
+    }
+
+  }
+}
