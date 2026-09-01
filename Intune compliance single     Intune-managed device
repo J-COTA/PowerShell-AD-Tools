@@ -1,0 +1,92 @@
+<#
+.SYNOPSIS
+    Reports the configuration and compliance policy states applied to a single
+    Intune-managed device, looked up by device name.
+
+.DESCRIPTION
+    Read-only. Connects to Microsoft Graph via device code auth, resolves an
+    Intune managed device by name, then reports the per-device configuration
+    profile states and compliance policy states.
+
+    Uses /v1.0 for the device lookup and /beta for the per-device state
+    expansions (deviceConfigurationStates / deviceCompliancePolicyStates), which
+    are only exposed on the beta endpoint.
+
+.EXAMPLE
+    .\Get-IntuneDevicePolicyState.ps1
+    Reports policy states for the device named in $TargetDeviceName.
+
+.NOTES
+    Graph scopes (read-only, delegated):
+        DeviceManagementManagedDevices.Read.All
+        DeviceManagementConfiguration.Read.All
+    Run as: any user with the above delegated consent.
+#>
+
+[CmdletBinding()]
+param(
+    [string]$TargetDeviceName = "DEVICE NAME"
+)
+
+$ErrorActionPreference = 'Stop'
+
+try {
+    Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All","DeviceManagementConfiguration.Read.All" -UseDeviceCode | Out-Null
+
+    Write-Output "Processing query for device: $TargetDeviceName..."
+
+    # Device lookup lives on v1.0. Backticks escape $filter/$select so PowerShell
+    # does not treat them as variables.
+    $uri = "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices?`$filter=deviceName eq '$TargetDeviceName'&`$select=id,deviceName,model,operatingSystem,osVersion"
+    $response = Invoke-MgGraphRequest -Method GET -Uri $uri
+    $device = $response.value | Select-Object -First 1
+
+    if (-not $device) {
+        Write-Output "ERROR: '$TargetDeviceName' was not found in Intune managed devices."
+        Write-Output "Check the spelling, or verify the device name in the Intune portal matches exactly."
+        return
+    }
+
+    Write-Output "========================================================================="
+    Write-Output "DEVICE FOUND: $($device.deviceName)  (Intune Object Id: $($device.id))"
+    Write-Output "Model: $($device.model)  |  OS: $($device.operatingSystem) $($device.osVersion)"
+    Write-Output "========================================================================="
+    Write-Output ""
+
+    # --- Configuration profile states (beta endpoint) ---
+    Write-Output "ACTIVE DEVICE CONFIGURATION PROFILES:"
+    Write-Output "------------------------------------------------------------------------"
+    $configUri = "https://graph.microsoft.com/beta/deviceManagement/managedDevices/$($device.id)/deviceConfigurationStates"
+    $configStates = (Invoke-MgGraphRequest -Method GET -Uri $configUri).value
+
+    if ($configStates) {
+        $configStates |
+            Select-Object @{N='Policy Name';E={$_.displayName}},
+                          @{N='Deployment State';E={$_.state}},
+                          @{N='State Record ID';E={$_.id}} |
+            Format-Table -AutoSize
+    } else {
+        Write-Output "  No configuration profiles are currently tracking on this device."
+    }
+    Write-Output ""
+
+    # --- Compliance policy states (beta endpoint) ---
+    Write-Output "ACTIVE DEVICE COMPLIANCE POLICIES:"
+    Write-Output "------------------------------------------------------------------------"
+    $complianceUri = "https://graph.microsoft.com/beta/deviceManagement/managedDevices/$($device.id)/deviceCompliancePolicyStates"
+    $complianceStates = (Invoke-MgGraphRequest -Method GET -Uri $complianceUri).value
+
+    if ($complianceStates) {
+        $complianceStates |
+            Select-Object @{N='Compliance Policy';E={$_.displayName}},
+                          @{N='State';E={$_.state}},
+                          @{N='State Record ID';E={$_.id}} |
+            Format-Table -AutoSize
+    } else {
+        Write-Output "  No compliance policies are currently tracking on this device."
+    }
+}
+catch {
+    Write-Output "FAILED: $($_.Exception.Message)"
+    exit 1
+}
