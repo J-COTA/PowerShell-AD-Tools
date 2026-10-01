@@ -1,0 +1,60 @@
+# 1. Connect with necessary scopes to read user and tenant subscription names
+Connect-MgGraph -Scopes "User.Read.All", "Directory.Read.All", "Organization.Read.All"
+
+# 2. Define the output file path
+$OutputPath = "$env:USERPROFILE\Desktop\Disabled_Licensed_Users_Detailed.csv"
+
+# 3. Pull tenant subscriptions into a lookup hashtable to map SkuIds to readable names
+Write-Host "Caching active tenant license names..." -ForegroundColor Cyan
+$SubscribedSkus = Get-MgSubscribedSku -All
+$LicenseMap = @{}
+foreach ($Sku in $SubscribedSkus) {
+    # Maps the unique GUID to the readable string name (e.g., "ENTERPRISEPACK")
+    $LicenseMap[$Sku.SkuId] = $Sku.SkuPartNumber
+}
+
+# 4. Fetch all disabled users
+Write-Host "Fetching disabled users from Microsoft 365..." -ForegroundColor Cyan
+$DisabledUsers = Get-MgUser -Filter "accountEnabled eq false" -Property Id, DisplayName, UserPrincipalName, AssignedLicenses -All
+
+$Report = @()
+
+# 5. Loop through each user and translate their license GUIDs
+foreach ($User in $DisabledUsers) {
+    if ($User.AssignedLicenses.Count -gt 0) {
+        
+        # Translate each cryptic SkuId into its friendly license name
+        $FriendlyNames = foreach ($License in $User.AssignedLicenses) {
+            if ($LicenseMap.ContainsKey($License.SkuId)) {
+                $LicenseMap[$License.SkuId]
+            } else {
+                # Fallback to GUID if the license isn't actively listed in the tenant SKUs
+                $License.SkuId
+            }
+        }
+        
+        # Combine multiple licenses into a comma-separated text string
+        $LicenseString = $FriendlyNames -join ", "
+        
+        # Create a custom object for the report
+        $Report += [PSCustomObject]@{
+            "Display Name"       = $User.DisplayName
+            "UserPrincipalName"  = $User.UserPrincipalName
+            "User ID"            = $User.Id
+            "Assigned Licenses"  = $LicenseString
+            "License Count"      = $User.AssignedLicenses.Count
+        }
+    }
+}
+
+# 6. Export results to CSV
+if ($Report.Count -gt 0) {
+    $Report | Export-Csv -Path $OutputPath -NoTypeInformation
+    Write-Host "Success! Found $($Report.Count) disabled users with active licenses." -ForegroundColor Green
+    Write-Host "Detailed report saved to: $OutputPath" -ForegroundColor Green
+} else {
+    Write-Host "Clean audit! No disabled users with active licenses were found." -ForegroundColor Yellow
+}
+
+# 7. Disconnect session
+Disconnect-MgGraph
