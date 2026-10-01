@@ -1,0 +1,41 @@
+# 1. Connect to Microsoft Graph with the necessary admin permissions
+Connect-MgGraph -Scopes "User.ReadWrite.All", "GroupMember.ReadWrite.All", "Directory.ReadWrite.All"
+
+# replace the following UPN
+$UserUPN = "Full.UPN@domain.com"
+$User = Get-MgUser -UserId $UserUPN
+
+if ($User) {
+    Write-Host "Starting offboarding for $($UserUPN)..." -ForegroundColor Yellow
+
+    # Step A: Revoke all active sessions (Forces re-authentication everywhere)
+    Revoke-MgUserSignInSession -UserId $User.Id
+    Write-Host "SUCCESS: Active web/app sessions revoked." -ForegroundColor Green
+
+    # Step B: Reset password to a random string and block sign-in
+    $RandomPassword = [Guid]::NewGuid().ToString()
+    Update-MgUser -UserId $User.Id -AccountEnabled:$false -PasswordProfile @{
+        Password = $RandomPassword
+        ForceChangePasswordNextSignIn = $true
+    }
+    Write-Host "SUCCESS: Account disabled and password scrambled." -ForegroundColor Green
+
+    # Step C: Remove from all non-dynamic groups
+    $GroupMemberships = Get-MgUserMemberOf -UserId $User.Id -All | Where-Object { $_.AdditionalProperties.'@odata.type' -eq '#microsoft.graph.group' }
+
+    foreach ($Group in $GroupMemberships) {
+        # Fetch group details to check if it's dynamic
+        $GroupDetails = Get-MgGroup -GroupId $Group.Id
+
+        # Only remove if it is a standard assigned group (not Dynamic)
+        if ($GroupDetails.GroupTypes -notcontains "DynamicMembership") {
+            Remove-MgGroupMemberByRef -GroupId $Group.Id -DirectoryObjectId $User.Id
+            Write-Host "REMOVED: User removed from group: $($GroupDetails.DisplayName)" -ForegroundColor Cyan
+        }
+    }
+
+    Write-Host "DONE: Offboarding routine complete for $($UserUPN)!" -ForegroundColor Green
+} else {
+    Write-Error "User not found."
+}
+ 
